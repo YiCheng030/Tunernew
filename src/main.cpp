@@ -5,8 +5,8 @@
 #include <Fonts/FreeMonoBold9pt7b.h>  // 字型FreeMonoBold9pt7b
 #include <Fonts/FreeSansBold9pt7b.h>  // 字型FreeSansBold9pt7b
 #include <Fonts/FreeSerif9pt7b.h>  // 字型FreeSerif9pt7b
-#include <SPI.h>
 #include <I2S.h>
+#include <SPI.h>
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define A4   440.00   //基準音
 /*------------------------------------六弦吉他------------------------------------*/
