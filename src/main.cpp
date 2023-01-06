@@ -213,13 +213,6 @@ bool InRange(float frequency, float low_limit, float high_limit){
     return false;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-void precise(){
-  if(intonation >= 48 && intonation <= 52)
-    color = Green;
-  else
-    color = White;
-}
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float AudioPitch(float Musical_Alphabet, float Front_or_later_Musical_Alphabet){
   float y;
   if(Musical_Alphabet > Front_or_later_Musical_Alphabet){
