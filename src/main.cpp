@@ -216,6 +216,22 @@ bool InRange(float frequency, float low_limit, float high_limit){
 void precise(){
   if(intonation >= 48 && intonation <= 52)
     color = Green;
+  else
+    color = White;
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+float AudioPitch(float Musical_Alphabet, float Front_or_later_Musical_Alphabet){
+  float y;
+  if(Musical_Alphabet > Front_or_later_Musical_Alphabet){
+    y = ((Musical_Alphabet - Front_or_later_Musical_Alphabet) * 0.5);
+    intonation = map(freq, 0, y, 0, (TotalWire * 0.5));
+    return intonation;
+  }
+  else{
+    y = ((Front_or_later_Musical_Alphabet - Musical_Alphabet) * 0.5);
+    intonation = map(freq, 0, y, (TotalWire * 0.5), TotalWire);
+    return intonation;
+  }
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Tuner_Interfaz(){
