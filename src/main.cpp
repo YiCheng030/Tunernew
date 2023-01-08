@@ -237,33 +237,81 @@ void Tuner_Interfaz(){
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void MusicalAlphabetJudge(){
-/*--------------------------------------------------------------------------------*/
-  if(InRange(freq, C[0], C[0], B[0], C[1]))
-    Octave = 0;
-  else if(InRange(freq, B[0], C[1], B[1], C[2]))
-    Octave = 1;
-  else if(InRange(freq, B[1], C[2], B[2], C[3]))
-    Octave = 2;
-  else if(InRange(freq, B[2], C[3], B[3], C[4]))
-    Octave = 3;
-  else if(InRange(freq, B[3], C[4], B[4], C[5]))
-    Octave = 4;
-  else if(InRange(freq, B[4], C[5], B[5], C[6]))
-    Octave = 5;
-  else if(InRange(freq, B[5], C[6], B[6], C[7]))
-    Octave = 6;
-}
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-void TunerShow(){
   Find_peaks();
   tft.setTextSize(1);
   tft.setTextColor(White, Black);
   tft.setCursor(6, 120);
   tft.print(freq);tft.print("Hz");
-
+/*--------------------------------------------------------------------------------*/
+  if(InRange(freq, C[0], C[0], B[0], C[1]))      //八度0
+    Octave = 0;
+  else if(InRange(freq, B[0], C[1], B[1], C[2])) //八度1
+    Octave = 1;
+  else if(InRange(freq, B[1], C[2], B[2], C[3])) //八度2
+    Octave = 2;
+  else if(InRange(freq, B[2], C[3], B[3], C[4])) //八度3
+    Octave = 3;
+  else if(InRange(freq, B[3], C[4], B[4], C[5])) //八度4
+    Octave = 4;
+  else if(InRange(freq, B[4], C[5], B[5], C[6])) //八度5
+    Octave = 5;
+  else if(InRange(freq, B[5], C[6], B[6], C[7])) //八度6
+    Octave = 6;
+  else if(InRange(freq, B[6], C[7], B[7], B[7])) //八度7
+    Octave = 7;
+/*--------------------------------------------------------------------------------*/
   tft.setTextSize(4);
   tft.setTextColor(Black, White);
   tft.setCursor(70, 53);
+
+  if(InRange(freq, C[Octave], C[Octave], C[Octave], CU[Octave]) && Octave == 0){  //C0
+    intonation = AudioPitch(C[Octave], C[Octave], CU[Octave]);
+    tft.print("C ");
+  }
+  else if(InRange(freq, B[Octave - 1], C[Octave], C[Octave], CU[Octave]) && Octave > 0){ //C
+    intonation = AudioPitch(C[Octave], B[Octave - 1], CU[Octave]);
+    tft.print("C ");
+  }
+  else if(InRange(freq, C[Octave], CU[Octave], CU[Octave], D[Octave])){ //C#
+    intonation = AudioPitch(CU[Octave], C[Octave], D[Octave]);
+    tft.print("C#");
+  }
+  else if(InRange(freq, CU[Octave], D[Octave], D[Octave], DU[Octave])){ //D
+    intonation = AudioPitch(D[Octave], CU[Octave], DU[Octave]);
+    tft.print("D ");
+  }
+  else if(InRange(freq, D[Octave], DU[Octave], DU[Octave], E[Octave])){ //D#
+    intonation = AudioPitch(DU[Octave], D[Octave], E[Octave]);
+    tft.print("D#");
+  }
+  else if(InRange(freq, DU[Octave], E[Octave], E[Octave], F[Octave])){  //E
+    intonation = AudioPitch(E[Octave], DU[Octave], F[Octave]);
+    tft.print("E ");
+  }
+  else if(InRange(freq, E[Octave], F[Octave], F[Octave], FU[Octave])){  //F
+    intonation = AudioPitch(F[Octave], E[Octave], FU[Octave]);
+    tft.print("F ");
+  }
+  else if(InRange(freq, F[Octave], FU[Octave], FU[Octave], G[Octave])){ //F#
+    intonation = AudioPitch(FU[Octave], F[Octave], G[Octave]);
+    tft.print("F#");
+  }
+  else if(InRange(freq, FU[Octave], G[Octave], G[Octave], GU[Octave])){ //G
+    intonation = AudioPitch(G[Octave], FU[Octave], GU[Octave]);
+    tft.print("G ");
+  }
+  else if(InRange(freq, G[Octave], GU[Octave], GU[Octave], A[Octave])){ //G#
+    intonation = AudioPitch(GU[Octave], G[Octave], A[Octave]);
+    tft.print("G#");
+  }
+  else if(InRange(freq, GU[Octave], A[Octave], A[Octave], B[Octave])){  //A
+    intonation = AudioPitch(A[Octave], GU[Octave], B[Octave]);
+    tft.print("A ");
+  }
+  else if(InRange(freq, A[Octave], B[Octave], B[Octave], C[Octave + 1]) && Octave <= 7){ //B
+    intonation = AudioPitch(B[Octave], A[Octave], C[Octave + 1]);
+    tft.print("B ");
+  }
 
   Tuner_Interfaz();
   Close_FFT();        // 結束 FFT運算，釋放相關記憶體
@@ -271,7 +319,7 @@ void TunerShow(){
   tft.setTextSize(3);
   tft.setTextColor(White, Black);
   tft.setCursor(6, 6);
-  tft.print(string);
+  tft.print(Octave);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void setup() {
