@@ -237,11 +237,11 @@ void Find_peaks(){
   Init_FFT(samples);
   InputData();        // 輸入原始資料
   FFT();              // 進行 FFT計算
-  for(count1 = 18; count1 <= (samples * 0.5); count1++){
+  for(count1 = 12; count1 <= (samples * 0.5); count1++){
     if(bin(count1) > binmax)
       binmax = bin(count1);
   }
-  for(count1 = 18; count1 <= (samples * 0.5); count1++){
+  for(count1 = 12; count1 <= (samples * 0.5); count1++){
     if(bin(count1) >= binmax * 0.3){
       if(bin(count1) >= bin(count1 - 1)){
         for(count3 = 0; count3 < 11; count3++){
@@ -269,18 +269,17 @@ bool InRange(float frequency, float low_limit, float high_limit){
     return false;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-float AudioPitch(float Musical_Alphabet, float Front_or_later_Musical_Alphabet){
+float AudioPitch(float Musical_Alphabet, float Low_Musical_Alphabet, float High_Musical_Alphabet){
   float y;
-  if(Musical_Alphabet > Front_or_later_Musical_Alphabet){
-    y = ((Musical_Alphabet - Front_or_later_Musical_Alphabet) * 0.5);
+  if(Musical_Alphabet > Low_Musical_Alphabet){ //上半
+    y = ((Musical_Alphabet - Low_Musical_Alphabet) * 0.5);
     intonation = map(freq, 0, y, 0, (TotalWire * 0.5));
-    return intonation;
   }
-  else{
-    y = ((Front_or_later_Musical_Alphabet - Musical_Alphabet) * 0.5);
+  else if(Musical_Alphabet < High_Musical_Alphabet){ //下半
+    y = ((High_Musical_Alphabet - Musical_Alphabet) * 0.5);
     intonation = map(freq, 0, y, (TotalWire * 0.5), TotalWire);
-    return intonation;
   }
+  return intonation;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Tuner_Interfaz(){
@@ -317,152 +316,19 @@ void MusicalAlphabet(){
   tft.setTextSize(4);
   tft.setTextColor(Black, White);
   tft.setCursor(70, 53);
-  /*第六弦*/
-  if(InRange(freq, 77.8, A2)){
+  if(InRange(freq, ((G1 - F1U) * 0.5), ((A2 - G2U) * 0.5)))
     string = 6;
-    if(InRange(freq, 77.8, F2)){
-      intonation = map(freq, 77.8, F2, 0, TotalWire); //E2
-      tft.print("E ");
-    }
-    else if(InRange(freq, E2, F2U)){
-      intonation = map(freq, E2, F2U, 0, TotalWire); //F2
-      tft.print("F ");
-    }
-    else if(InRange(freq, F2, G2)){
-      intonation = map(freq, F2, G2, 0, TotalWire); //F2U
-      tft.print("F#");
-    }
-    else if(InRange(freq, F2U, G2U)){
-      intonation = map(freq, F2U, G2U, 0, TotalWire); //G2
-      tft.print("G ");
-    }
-    else if(InRange(freq, G2, A2)){
-      intonation = map(freq, G2, A2, 0, TotalWire); //G2U
-      tft.print("G#");
-    }
-  }
-  /*第五弦*/
-  else if(InRange(freq, G2U, D3)){
+  else if(InRange(freq, ((A2 - G2U) * 0.5), ((D3 - C3U) * 0.5)))
     string = 5;
-    if(InRange(freq, G2U, A2U)){
-      intonation = map(freq, G2U, A2U, 0, TotalWire); //A2
-      tft.print("A ");
-    }
-    else if(InRange(freq, A2, B2)){
-      intonation = map(freq, A2, B2, 0, TotalWire); //A2U
-      tft.print("A#");
-    }
-    else if(InRange(freq, A2U, C3)){
-      intonation = map(freq, A2U, C3, 0, TotalWire); //B2
-      tft.print("B ");
-    }
-    else if(InRange(freq, B2, C3U)){
-      intonation = map(freq, B2, C3U, 0, TotalWire); //C3
-      tft.print("C ");
-    }
-    else if(InRange(freq, C3, D3)){
-      intonation = map(freq, C3, D3, 0, TotalWire); //C3U
-      tft.print("C#");
-    }
-  }
-  /*第四弦*/
-  else if(InRange(freq, C3U, G3)){
+  else if(InRange(freq, ((D3 - C3U) * 0.5), ((G3 - F3U) * 0.5)))
     string = 4;
-    if(InRange(freq, C3U, D3U)){
-      intonation = map(freq, C3U, D3U, 0, TotalWire); //D3
-      tft.print("D ");
-    }
-    else if(InRange(freq, D3, E3)){
-      intonation = map(freq, D3, E3, 0, TotalWire); //D3U
-      tft.print("D#");
-    }
-    else if(InRange(freq, D3U, F3)){
-      intonation = map(freq, D3U, F3, 0, TotalWire); //E3
-      tft.print("E ");
-    }
-    else if(InRange(freq, E3, F3U)){
-      intonation = map(freq, E3, F3U, 0, TotalWire); //F3
-      tft.print("F ");
-    }
-    else if(InRange(freq, F3, G3)){
-      intonation = map(freq, F3, G3, 0, TotalWire); //F3U
-      tft.print("F#");
-    }
-  }
-  /*第三弦*/
-  else if(InRange(freq, F3U, B3)){
+  else if(InRange(freq, ((G3 - F3U) * 0.5), ((B3 - A3U) * 0.5)))
     string = 3;
-    if(InRange(freq, F3U, G3U)){
-      intonation = map(freq, F3U, G3U, 0, TotalWire); //G3
-      tft.print("G ");
-    }
-    else if(InRange(freq, G3, A3)){
-      intonation = map(freq, G3, A3, 0, TotalWire); //G3U
-      tft.print("G#");
-    }
-    else if(InRange(freq, G3U, A3U)){
-      intonation = map(freq, G3U, A3U, 0, TotalWire); //A3
-      tft.print("A ");
-    }
-    else if(InRange(freq, A3, B3)){
-      intonation = map(freq, A3, B3, 0, TotalWire); //A3U
-      tft.print("A#");
-    }
-  }
-  /*第二弦*/
-  else if(InRange(freq, A3U, E4)){
+  else if(InRange(freq, ((B3 - A3U) * 0.5), ((E4 - D4U) * 0.5)))
     string = 2;
-    if(InRange(freq, A3U, C4)){
-      intonation = map(freq, A3U, C4, 0, TotalWire); //B3
-      tft.print("B ");
-    }
-    else if(InRange(freq, B3, C4U)){
-      intonation = map(freq, B3, C4U, 0, TotalWire); //C4
-      tft.print("C ");
-    }
-    else if(InRange(freq, C4, D4)){
-      intonation = map(freq, C4, D4, 0, TotalWire); //C4U
-      tft.print("C#");
-    }
-    else if(InRange(freq, C4U, D4U)){
-      intonation = map(freq, C4U, D4U, 0, TotalWire); //D4
-      tft.print("D ");
-    }
-    else if(InRange(freq, D4, E4)){
-      intonation = map(freq, D4, E4, 0, TotalWire); //D4U
-      tft.print("D#");
-    }
-  }
-  /*第一弦*/
-  else if(InRange(freq, D4U, A4)){
+  else if(InRange(freq, ((E4 - D4U) * 0.5), ((E5 - D5U) * 0.5)))
     string = 1;
-    if(InRange(freq, D4U, F4)){
-      intonation = map(freq, D4U, F4, 0, TotalWire); //E4
-      tft.print("E ");
-    }
-    else if(InRange(freq, E4, F4U)){
-      intonation = map(freq, E4, F4U, 0, TotalWire); //F4
-      tft.print("F ");
-    }
-    else if(InRange(freq, F4, G4)){
-      intonation = map(freq, F4, G4, 0, TotalWire); //F4U
-      tft.print("F#");
-    }
-    else if(InRange(freq, F4U, G4U)){
-      intonation = map(freq, B2, C3U, 0, TotalWire); //G4
-      tft.print("G ");
-    }
-    else if(InRange(freq, G4, A4)){
-      intonation = map(freq, G4, A4, 0, TotalWire); //G4U
-      tft.print("G#");
-    }
-  }
-  else{
-    tft.setTextSize(4);
-    tft.setTextColor(Black, White);
-    tft.setCursor(45, 53);
-    tft.print("   ");
-  }
+
   Tuner_Interfaz();
   Close_FFT();        // 結束 FFT運算，釋放相關記憶體
   tft.setTextSize(3);
