@@ -95,6 +95,7 @@
 #define A6   1760.04
 #define A6U  1864.70
 #define B6   1975.58
+#define C7   2093.06
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CS   4 // TFT CS PIN腳
 #define DC   6 // TFT DC(A0、RS) PIN腳
@@ -113,8 +114,9 @@ int M_of_N_FFT = 0;           // 蝶形運算的級數，N = 2^M
 int signalFrequency[samples];
 int x;
 float binmax, peakmax;
-float intonation = 0, intonation_old;
-int string;
+float Proportion, intonation = 0, intonation_old;
+int string, Octave;
+char name;
 float freq = 0;
 int PaintingWire;
 int j, j2;
@@ -237,11 +239,11 @@ void Find_peaks(){
   Init_FFT(samples);
   InputData();        // 輸入原始資料
   FFT();              // 進行 FFT計算
-  for(count1 = 12; count1 <= (samples * 0.5); count1++){
+  for(count1 = 10; count1 <= (samples * 0.5); count1++){
     if(bin(count1) > binmax)
       binmax = bin(count1);
   }
-  for(count1 = 12; count1 <= (samples * 0.5); count1++){
+  for(count1 = 10; count1 <= (samples * 0.5); count1++){
     if(bin(count1) >= binmax * 0.3){
       if(bin(count1) >= bin(count1 - 1)){
         for(count3 = 0; count3 < 11; count3++){
@@ -262,24 +264,27 @@ void Find_peaks(){
   // Serial.println(freq);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-bool InRange(float frequency, float low_limit, float high_limit){
-  if(frequency < high_limit && frequency > low_limit)
+bool InRange(float frequency, float L_Musical_Alphabet, float Musical_Alphabet, float Musical_Alphabet2, float H_Musical_Alphabet){
+  float ml, mu;
+  ml = ((Musical_Alphabet - L_Musical_Alphabet) * 0.5);
+  mu = ((H_Musical_Alphabet - Musical_Alphabet2) * 0.5);
+  if(frequency < (H_Musical_Alphabet - mu) && frequency > (L_Musical_Alphabet - ml))
     return true;
   else
     return false;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-float AudioPitch(float Musical_Alphabet, float Low_Musical_Alphabet, float High_Musical_Alphabet){
-  float y;
-  if(Musical_Alphabet > Low_Musical_Alphabet){ //上半
-    y = ((Musical_Alphabet - Low_Musical_Alphabet) * 0.5);
-    intonation = map(freq, 0, y, 0, (TotalWire * 0.5));
+float AudioPitch(float Musical_Alphabet, float L_Musical_Alphabet, float H_Musical_Alphabet){
+  float ml, mu;
+  ml = ((Musical_Alphabet - L_Musical_Alphabet) * 0.5);
+  mu = ((H_Musical_Alphabet - Musical_Alphabet) * 0.5);
+  if(freq > (L_Musical_Alphabet + ml)){ //上半
+    Proportion = map(freq, (L_Musical_Alphabet + ml), Musical_Alphabet, 0, (TotalWire * 0.5));
   }
-  else if(Musical_Alphabet < High_Musical_Alphabet){ //下半
-    y = ((High_Musical_Alphabet - Musical_Alphabet) * 0.5);
-    intonation = map(freq, 0, y, (TotalWire * 0.5), TotalWire);
+  else if(freq < (H_Musical_Alphabet - mu)){ //下半
+    Proportion = map(freq, (H_Musical_Alphabet - mu), Musical_Alphabet, (TotalWire * 0.5), TotalWire);
   }
-  return intonation;
+  return Proportion;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Tuner_Interfaz(){
@@ -306,7 +311,83 @@ void Tuner_Interfaz(){
   }
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-void MusicalAlphabet(){
+void MusicalAlphabetJudge(){
+/*--------------------------------------------------------------------------------*/
+  if(InRange(freq, C0, C0, B0, C1))
+    Octave = 0;
+  else if(InRange(freq, B0, C1, B1, C2))
+    Octave = 1;
+  else if(InRange(freq, B1, C2, B2, C3))
+    Octave = 2;
+  else if(InRange(freq, B2, C3, B3, C4))
+    Octave = 3;
+  else if(InRange(freq, B3, C4, B4, C5))
+    Octave = 4;
+  else if(InRange(freq, B4, C5, B5, C6))
+    Octave = 5;
+  else if(InRange(freq, B5, C6, B6, C7))
+    Octave = 6;
+  if(InRange(freq, B0, C1, G2U, A2)){
+    string = 6;
+    if(InRange(freq, B0, C1, C1, C1U)){
+      intonation = AudioPitch(C1, B0, C1U);
+      tft.print("C ");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("C#");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("D ");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("D#");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("E ");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("F ");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("G ");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("G#");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("A ");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("A#");
+    }
+    else if(InRange(freq, C1, C1U, C1U, D1)){
+      intonation = AudioPitch(C1U, C1, D1);
+      tft.print("B ");
+    }
+  }
+    
+  else if(InRange(freq, G2U, A2, C3U, D3))
+    string = 5;
+  else if(InRange(freq, C3U, D3, F3U, G3))
+    string = 4;
+  else if(InRange(freq, F3U, G3, A3U, B3))
+    string = 3;
+  else if(InRange(freq, A3U, B3, D4U, E4))
+    string = 2;
+  else if(InRange(freq, D4U, E4, B5, C6))
+    string = 1;
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+void TunerShow(){
   Find_peaks();
   tft.setTextSize(1);
   tft.setTextColor(White, Black);
@@ -316,21 +397,10 @@ void MusicalAlphabet(){
   tft.setTextSize(4);
   tft.setTextColor(Black, White);
   tft.setCursor(70, 53);
-  if(InRange(freq, ((G1 - F1U) * 0.5), ((A2 - G2U) * 0.5)))
-    string = 6;
-  else if(InRange(freq, ((A2 - G2U) * 0.5), ((D3 - C3U) * 0.5)))
-    string = 5;
-  else if(InRange(freq, ((D3 - C3U) * 0.5), ((G3 - F3U) * 0.5)))
-    string = 4;
-  else if(InRange(freq, ((G3 - F3U) * 0.5), ((B3 - A3U) * 0.5)))
-    string = 3;
-  else if(InRange(freq, ((B3 - A3U) * 0.5), ((E4 - D4U) * 0.5)))
-    string = 2;
-  else if(InRange(freq, ((E4 - D4U) * 0.5), ((E5 - D5U) * 0.5)))
-    string = 1;
 
   Tuner_Interfaz();
   Close_FFT();        // 結束 FFT運算，釋放相關記憶體
+
   tft.setTextSize(3);
   tft.setTextColor(White, Black);
   tft.setCursor(6, 6);
@@ -376,5 +446,5 @@ void setup() {
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void loop(){
-  MusicalAlphabet();
+  MusicalAlphabetJudge();
 }
