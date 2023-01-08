@@ -8,95 +8,6 @@
 #include <I2S.h>
 #include <SPI.h>
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-#define C0   16.35
-#define C0U  17.32
-#define D0   18.35
-#define D0U  19.44
-#define E0   20.60
-#define F0   21.83
-#define F0U  23.13
-#define G0   24.50
-#define G0U  25.96
-#define A0   27.50
-#define A0U  29.14
-#define B0   30.87
-#define C1   32.70
-#define C1U  34.65
-#define D1   36.70
-#define D1U  38.89
-#define E1   41.20
-#define F1   43.66
-#define F1U  46.25
-#define G1   49.00
-#define G1U  51.91
-#define A1   55.00
-#define A1U  58.27
-#define B1   61.74
-#define C2   65.40
-#define C2U  69.30
-#define D2   73.42
-#define D2U  77.78
-/*------------------------------------六弦吉他------------------------------------*/
-#define E2   82.41    //第六弦 (最粗)
-#define F2   87.31
-#define F2U  92.50
-#define G2   98.00
-#define G2U  103.83
-#define A2   110.00   //第五弦
-#define A2U  116.54
-#define B2   123.47
-#define C3   130.81
-#define C3U  138.59
-#define D3   146.83   //第四弦
-#define D3U  155.56
-#define E3   164.81
-#define F3   174.61
-#define F3U  185.00
-#define G3   196.00   //第三弦
-#define G3U  207.65
-#define A3   220.00
-#define A3U  233.08
-#define B3   246.94   //第二弦
-#define C4   261.63
-#define C4U  277.18
-#define D4   293.66
-#define D4U  311.13
-#define E4   329.63   //第一弦 (最細)
-#define F4   349.23
-#define F4U  369.99
-#define G4   392.00
-#define G4U  415.30
-/*--------------------------------------------------------------------------------*/
-#define A4   440.00   //基準音
-/*--------------------------------------------------------------------------------*/
-#define A4U  466.18
-#define B4   493.90
-#define C5   523.26
-#define C5U  554.38
-#define D5   587.34
-#define D5U  622.27
-#define E5   659.27
-#define F5   698.47
-#define F5U  740.00
-#define G5   784.01
-#define G5U  830.63
-#define A5   880.00
-#define A5U  932.35
-#define B5   987.79
-#define C6   1046.53
-#define C6U  1108.76
-#define D6   1174.69
-#define D6U  1244.54
-#define E6   1318.54
-#define F6   1396.95
-#define F6U  1480.01
-#define G6   1568.02
-#define G6U  1661.26
-#define A6   1760.04
-#define A6U  1864.70
-#define B6   1975.58
-#define C7   2093.06
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CS   4 // TFT CS PIN腳
 #define DC   6 // TFT DC(A0、RS) PIN腳
 #define RST  7 // TFT RES(Reset) PIN腳
@@ -113,6 +24,20 @@ int N_FFT = 0;                // 傅立葉變換的點數
 int M_of_N_FFT = 0;           // 蝶形運算的級數，N = 2^M  
 int signalFrequency[samples];
 int x;
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+float C[8]  = {16.352, 32.704, 65.408, 130.816, 261.632, 523.264, 1046.528, 2093.056};
+float CU[8] = {17.324, 34.649, 69.297, 138.595, 177.189, 554.379, 1108.758, 2217.515};
+float D[8]  = {18.354, 36.709, 73.418, 146.836, 293.672, 587.344, 1174.688, 2349.376};
+float DU[8] = {19.446, 38.892, 77.784, 155.567, 311.135, 622.269, 1244.538, 2489.076};
+float E[8]  = {20.602, 41.204, 82.409, 164.818, 329.636, 659.271, 1318.542, 2637.084};
+float F[8]  = {21.827, 43.655, 87.309, 174.618, 349.237, 698.473, 1396.947, 2793.893};
+float FU[8] = {23.125, 46.250, 92.501, 185.002, 370.003, 740.007, 1480.013, 2960.027};
+float G[8]  = {24.500, 49.001, 98.001, 196.002, 392.005, 784.010, 1568.019, 3136.039};
+float GU[8] = {25.957, 51.914, 103.829, 207.657, 415.315, 830.629, 1661.258, 3322.517};
+float A[8]  = {27.501, 55.001, 110.003, 220.005, 440.010, 880.021, 1760.042, 3520.084};
+float AU[8] = {29.136, 58.272, 116.544, 233.087, 466.175, 932.350, 1864.699, 3729.398};
+float B[8]  = {30.868, 61.737, 123.474, 246.947, 493.895, 987.790, 1975.580, 3951.160};
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float binmax, peakmax;
 float Proportion, intonation = 0, intonation_old;
 int string, Octave;
@@ -313,78 +238,20 @@ void Tuner_Interfaz(){
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void MusicalAlphabetJudge(){
 /*--------------------------------------------------------------------------------*/
-  if(InRange(freq, C0, C0, B0, C1))
+  if(InRange(freq, C[0], C[0], B[0], C[1]))
     Octave = 0;
-  else if(InRange(freq, B0, C1, B1, C2))
+  else if(InRange(freq, B[0], C[1], B[1], C[2]))
     Octave = 1;
-  else if(InRange(freq, B1, C2, B2, C3))
+  else if(InRange(freq, B[1], C[2], B[2], C[3]))
     Octave = 2;
-  else if(InRange(freq, B2, C3, B3, C4))
+  else if(InRange(freq, B[2], C[3], B[3], C[4]))
     Octave = 3;
-  else if(InRange(freq, B3, C4, B4, C5))
+  else if(InRange(freq, B[3], C[4], B[4], C[5]))
     Octave = 4;
-  else if(InRange(freq, B4, C5, B5, C6))
+  else if(InRange(freq, B[4], C[5], B[5], C[6]))
     Octave = 5;
-  else if(InRange(freq, B5, C6, B6, C7))
+  else if(InRange(freq, B[5], C[6], B[6], C[7]))
     Octave = 6;
-  if(InRange(freq, B0, C1, G2U, A2)){
-    string = 6;
-    if(InRange(freq, B0, C1, C1, C1U)){
-      intonation = AudioPitch(C1, B0, C1U);
-      tft.print("C ");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("C#");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("D ");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("D#");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("E ");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("F ");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("G ");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("G#");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("A ");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("A#");
-    }
-    else if(InRange(freq, C1, C1U, C1U, D1)){
-      intonation = AudioPitch(C1U, C1, D1);
-      tft.print("B ");
-    }
-  }
-    
-  else if(InRange(freq, G2U, A2, C3U, D3))
-    string = 5;
-  else if(InRange(freq, C3U, D3, F3U, G3))
-    string = 4;
-  else if(InRange(freq, F3U, G3, A3U, B3))
-    string = 3;
-  else if(InRange(freq, A3U, B3, D4U, E4))
-    string = 2;
-  else if(InRange(freq, D4U, E4, B5, C6))
-    string = 1;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void TunerShow(){
