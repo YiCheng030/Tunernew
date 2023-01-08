@@ -13,17 +13,18 @@
 #define RST  7 // TFT RES(Reset) PIN腳
 #define MOSI 8 // TFT MOSI PIN腳
 #define SCK  9 // TFT SCK PIN腳
-
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+#define Black tft.color565(0, 0, 0)         //黑
+#define White tft.color565(255, 255, 255)   //白
+#define Gray  tft.color565(128, 128, 128)   //灰
+#define Red   tft.color565(255, 0, 0)       //紅
+#define Green tft.color565(0, 255, 0)       //綠
+#define Blue  tft.color565(0, 0, 255)       //藍
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define samples 1024
 #define fs 4000
 #define TotalWire 400
 #define bin(x) sqrt(data_of_N_FFT[x].real * data_of_N_FFT[x].real + data_of_N_FFT[x].imag * data_of_N_FFT[x].imag) / 256.0
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-const int buttonPin = 5;
-int N_FFT = 0;                // 傅立葉變換的點數  
-int M_of_N_FFT = 0;           // 蝶形運算的級數，N = 2^M  
-int signalFrequency[samples];
-int x;
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float C[8]  = {16.352, 32.704, 65.408, 130.816, 261.632, 523.264, 1046.528, 2093.056};
 float CU[8] = {17.324, 34.649, 69.297, 138.595, 177.189, 554.379, 1108.758, 2217.515};
@@ -38,15 +39,19 @@ float A[8]  = {27.501, 55.001, 110.003, 220.005, 440.010, 880.021, 1760.042, 352
 float AU[8] = {29.136, 58.272, 116.544, 233.087, 466.175, 932.350, 1864.699, 3729.398};
 float B[8]  = {30.868, 61.737, 123.474, 246.947, 493.895, 987.790, 1975.580, 3951.160};
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
+const int buttonPin = 5;
+int N_FFT = 0;                // 傅立葉變換的點數  
+int M_of_N_FFT = 0;           // 蝶形運算的級數，N = 2^M  
+int signalFrequency[samples];
+int x;
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float binmax, peakmax;
 float Proportion, intonation = 0, intonation_old;
-int string, Octave;
-char name;
+int Octave;
 float freq = 0;
 int PaintingWire;
 int j, j2;
 int i, i2;
-int color;
 
 typedef float ElemType;     // 原始資料序列的資料型別,可以在這裡設定
 typedef struct{             // 定義複數結構體
@@ -56,13 +61,6 @@ typedef struct{             // 定義複數結構體
 ptr_complex_of_N_FFT data_of_N_FFT = NULL; // 開闢儲存單元，原始資料與負數結果均使用之
 
 Adafruit_ST7735 tft = Adafruit_ST7735(CS, DC, MOSI, SCK, RST);
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-#define Black tft.color565(0, 0, 0)         //黑
-#define White tft.color565(255, 255, 255)   //白
-#define Gray  tft.color565(128, 128, 128)   //灰
-#define Red   tft.color565(255, 0, 0)       //紅
-#define Green tft.color565(0, 255, 0)       //綠
-#define Blue  tft.color565(0, 0, 255)       //藍
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void InputData(void){
   int count;
@@ -178,15 +176,11 @@ void Find_peaks(){
           }
         }
         peak[count2] = x;
-        // Serial.print(peak[count2]);
-        // Serial.print("\t");
         count2++;
       }
     }
   }
-  // Serial.println(peak[0]);
   freq = ((fs / (samples * 1.0)) * peak[0]);
-  // Serial.println(freq);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 bool InRange(float frequency, float L_Musical_Alphabet, float Musical_Alphabet, float Musical_Alphabet2, float H_Musical_Alphabet){
@@ -261,70 +255,81 @@ void MusicalAlphabetJudge(){
     Octave = 7;
 /*--------------------------------------------------------------------------------*/
   tft.setTextSize(4);
-  tft.setTextColor(Black, White);
   tft.setCursor(70, 53);
 
   if(InRange(freq, C[Octave], C[Octave], C[Octave], CU[Octave]) && Octave == 0){  //C0
     intonation = AudioPitch(C[Octave], C[Octave], CU[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("C ");
   }
   else if(InRange(freq, B[Octave - 1], C[Octave], C[Octave], CU[Octave]) && Octave > 0){ //C
     intonation = AudioPitch(C[Octave], B[Octave - 1], CU[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("C ");
   }
   else if(InRange(freq, C[Octave], CU[Octave], CU[Octave], D[Octave])){ //C#
     intonation = AudioPitch(CU[Octave], C[Octave], D[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("C#");
   }
   else if(InRange(freq, CU[Octave], D[Octave], D[Octave], DU[Octave])){ //D
     intonation = AudioPitch(D[Octave], CU[Octave], DU[Octave]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0){
-      tft.setTextColor(Black, Green);
-    }
+    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+      tft.setTextColor(Green, White);
+    else
+      tft.setTextColor(Black, White);
     tft.print("D ");
   }
   else if(InRange(freq, D[Octave], DU[Octave], DU[Octave], E[Octave])){ //D#
     intonation = AudioPitch(DU[Octave], D[Octave], E[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("D#");
   }
   else if(InRange(freq, DU[Octave], E[Octave], E[Octave], F[Octave])){  //E
     intonation = AudioPitch(E[Octave], DU[Octave], F[Octave]);
-    if(Octave == 2 && Octave == 4 && intonation >= 40.0 && intonation <= 60.0){
-      tft.setTextColor(Black, Green);
-    }
+    if(Octave == 2 && Octave == 4 && intonation >= 40.0 && intonation <= 60.0)
+      tft.setTextColor(Green, White);
+    else
+      tft.setTextColor(Black, White);
     tft.print("E ");
   }
   else if(InRange(freq, E[Octave], F[Octave], F[Octave], FU[Octave])){  //F
     intonation = AudioPitch(F[Octave], E[Octave], FU[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("F ");
   }
   else if(InRange(freq, F[Octave], FU[Octave], FU[Octave], G[Octave])){ //F#
     intonation = AudioPitch(FU[Octave], F[Octave], G[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("F#");
   }
   else if(InRange(freq, FU[Octave], G[Octave], G[Octave], GU[Octave])){ //G
     intonation = AudioPitch(G[Octave], FU[Octave], GU[Octave]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0){
-      tft.setTextColor(Black, Green);
-    }
+    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+      tft.setTextColor(Green, White);
+    else
+      tft.setTextColor(Black, White);
     tft.print("G ");
   }
   else if(InRange(freq, G[Octave], GU[Octave], GU[Octave], A[Octave])){ //G#
     intonation = AudioPitch(GU[Octave], G[Octave], A[Octave]);
+    tft.setTextColor(Black, White);
     tft.print("G#");
   }
   else if(InRange(freq, GU[Octave], A[Octave], A[Octave], B[Octave])){  //A
     intonation = AudioPitch(A[Octave], GU[Octave], B[Octave]);
-    if(Octave == 2 && intonation > 40.0 && intonation < 60.0){
-      tft.setTextColor(Black, Green);
-    }
+    if(Octave == 2 && intonation > 40.0 && intonation < 60.0)
+      tft.setTextColor(Green, White);
+    else
+      tft.setTextColor(Black, White);
     tft.print("A ");
   }
   else if(InRange(freq, A[Octave], B[Octave], B[Octave], C[Octave + 1]) && Octave <= 7){ //B
     intonation = AudioPitch(B[Octave], A[Octave], C[Octave + 1]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0){
-      tft.setTextColor(Black, Green);
-    }
+    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+      tft.setTextColor(Green, White);
+    else
+      tft.setTextColor(Black, White);
     tft.print("B ");
   }
 
@@ -347,7 +352,7 @@ void setup() {
   tft.setRotation(1);  // 螢幕轉向
   tft.fillScreen(Black);  // 設定螢幕背景為黑色
   tft.fillCircle(80, 65, 53, Gray);
-  tft.setTextColor(Black, White);
+  tft.fillCircle(80, 65, 48, White);
 
   tft.setTextSize(1);
   tft.setTextColor(White, Black);
