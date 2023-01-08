@@ -8,7 +8,34 @@
 #include <I2S.h>
 #include <SPI.h>
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-#define A4   440.00   //基準音
+#define C0   16.35
+#define C0U  17.32
+#define D0   18.35
+#define D0U  19.44
+#define E0   20.60
+#define F0   21.83
+#define F0U  23.13
+#define G0   24.50
+#define G0U  25.96
+#define A0   27.50
+#define A0U  29.14
+#define B0   30.87
+#define C1   32.70
+#define C1U  34.65
+#define D1   36.70
+#define D1U  38.89
+#define E1   41.20
+#define F1   43.66
+#define F1U  46.25
+#define G1   49.00
+#define G1U  51.91
+#define A1   55.00
+#define A1U  58.27
+#define B1   61.74
+#define C2   65.40
+#define C2U  69.30
+#define D2   73.42
+#define D2U  77.78
 /*------------------------------------六弦吉他------------------------------------*/
 #define E2   82.41    //第六弦 (最粗)
 #define F2   87.31
@@ -39,6 +66,35 @@
 #define F4U  369.99
 #define G4   392.00
 #define G4U  415.30
+/*--------------------------------------------------------------------------------*/
+#define A4   440.00   //基準音
+/*--------------------------------------------------------------------------------*/
+#define A4U  466.18
+#define B4   493.90
+#define C5   523.26
+#define C5U  554.38
+#define D5   587.34
+#define D5U  622.27
+#define E5   659.27
+#define F5   698.47
+#define F5U  740.00
+#define G5   784.01
+#define G5U  830.63
+#define A5   880.00
+#define A5U  932.35
+#define B5   987.79
+#define C6   1046.53
+#define C6U  1108.76
+#define D6   1174.69
+#define D6U  1244.54
+#define E6   1318.54
+#define F6   1396.95
+#define F6U  1480.01
+#define G6   1568.02
+#define G6U  1661.26
+#define A6   1760.04
+#define A6U  1864.70
+#define B6   1975.58
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CS   4 // TFT CS PIN腳
 #define DC   6 // TFT DC(A0、RS) PIN腳
