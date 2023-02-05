@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <math.h>
+#include <stdio.h>
 #include <Adafruit_GFX.h>  // 核心圖形庫
 #include <Adafruit_ST7735.h>  // Hardware-specific library for ST7735
 #include <Adafruit_ST7789.h>  //Hardware-specific library for ST7789
@@ -7,7 +9,6 @@
 #include <Fonts/FreeSerif9pt7b.h>  // 字型FreeSerif9pt7b
 #include <I2S.h>
 #include <SPI.h>
-#include <math.h>
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define battery 16 //分壓器
 #define CS   4 // TFT CS PIN腳
@@ -27,8 +28,9 @@
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define samples 1024
 #define fs 4000
+#define THRESHOLD 0.1 // 峰值閾值
 #define TotalWire 400
-#define bin(x) sqrt(data_of_N_FFT[x].real * data_of_N_FFT[x].real + data_of_N_FFT[x].imag * data_of_N_FFT[x].imag) / 256.0
+float bin[samples]; //= sqrt(data_of_N_FFT[x].real * data_of_N_FFT[x].real + data_of_N_FFT[x].imag * data_of_N_FFT[x].imag) / 256.0;
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float C[8]  = {16.352, 32.704, 65.408, 130.816, 261.632, 523.264, 1046.528, 2093.056};
 float CU[8] = {17.324, 34.649, 69.297, 138.595, 177.189, 554.379, 1108.758, 2217.515};
@@ -134,6 +136,8 @@ void FFT(void){
       }
     }
   }
+  for(x = 0; x < (samples * 0.5); x++)
+    bin[x] = sqrt(data_of_N_FFT[x].real * data_of_N_FFT[x].real + data_of_N_FFT[x].imag * data_of_N_FFT[x].imag) / 256.0;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 // 初始化FFT程式
@@ -161,32 +165,34 @@ void Close_FFT(void){
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Find_peaks(){
-  int count1, count2 = 1, count3;
-  int peak[count2];
-  peakmax = 0;
-  binmax = 0;
+  float max_magnitude = 0.0f;
+  double max = 0;
+  int count;
+  int index = 0;
   Init_FFT(samples);
   InputData();        // 輸入原始資料
   FFT();              // 進行 FFT計算
-  for(count1 = 10; count1 <= (samples * 0.5); count1++){
-    if(bin(count1) > binmax)
-      binmax = bin(count1);
+  // 找到 FFT 計算結果中的最大振幅
+  for(count = 10; count <= (samples * 0.5); count++){
+    float magnitude = fabs(bin[count]);
+    if(magnitude > max_magnitude)
+      max_magnitude = magnitude;
   }
-  for(count1 = 10; count1 <= (samples * 0.5); count1++){
-    if(bin(count1) >= binmax * 0.3){
-      if(bin(count1) >= bin(count1 - 1)){
-        for(count3 = 0; count3 < 11; count3++){
-          if(bin(count1 + count3) > peakmax){
-            peakmax = bin(count1 + count3);
-            x = count1 + count3;
-          }
-        }
-        peak[count2] = x;
-        count2++;
-      }
+  // 將 FFT 計算結果中振幅小於閾值的元素變為 0
+  for(count = 10; count < (samples * 0.5); count++) {
+    float magnitude = fabs(bin[count]);
+    if(magnitude < max_magnitude * THRESHOLD)
+      bin[count] = 0.0f;
+  }
+  // 尋找峰值
+  if(!(index == 0)){
+    for(count = 10; count < (samples * 0.5); count++){
+      double mag = bin[count];
+      if(mag > max)
+        index = count;
     }
   }
-  freq = ((fs / (samples * 1.0)) * peak[0]);
+  freq = ((fs / (samples * 1.0)) * index);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 bool InRange(float frequency, float L_Musical_Alphabet, float Musical_Alphabet, float Musical_Alphabet2, float H_Musical_Alphabet){
