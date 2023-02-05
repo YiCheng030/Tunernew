@@ -9,6 +9,7 @@
 #include <SPI.h>
 #include <math.h>
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
+#define battery 16 //分壓器
 #define CS   4 // TFT CS PIN腳
 #define DC   6 // TFT DC(A0、RS) PIN腳
 #define RST  7 // TFT RES(Reset) PIN腳
@@ -21,6 +22,8 @@
 #define Red   tft.color565(255, 0, 0)       //紅
 #define Green tft.color565(0, 255, 0)       //綠
 #define Blue  tft.color565(0, 0, 255)       //藍
+#define Yellow tft.color565(255, 255, 0)    //黃
+#define Green_Yellow tft.color565(173, 255, 47) //綠黃
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define samples 1024
 #define fs 4000
@@ -53,6 +56,8 @@ float freq = 0;
 int PaintingWire;
 int j, j2;
 int i, i2;
+long BADC;
+int BVal;
 
 typedef float ElemType;     // 原始資料序列的資料型別,可以在這裡設定
 typedef struct{             // 定義複數結構體
@@ -236,7 +241,7 @@ void MusicalAlphabetJudge(){
   tft.setTextSize(1);
   tft.setTextColor(White, Black);
   tft.setCursor(6, 120);
-  tft.print(freq);tft.print("Hz");
+  tft.print(freq);tft.print("Hz  ");
 /*--------------------------------------------------------------------------------*/
   if(InRange(freq, C[0], C[0], B[0], C[1]))      //八度0
     Octave = 0;
@@ -343,6 +348,41 @@ void MusicalAlphabetJudge(){
   tft.print(Octave);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
+void Power_display(){
+  BADC = analogRead(battery);
+  BVal = BADC * (3.3 / 4095) * 128;
+  if(BVal >= 360){
+    tft.fillRect(151, 9, 4, 8, Green);
+    tft.fillRect(146, 9, 4, 8, Green);
+    tft.fillRect(141, 9, 4, 8, Green);
+    tft.fillRect(136, 9, 4, 8, Green);
+  }
+  if(BVal >= 345){
+    tft.fillRect(151, 9, 4, 8, Black);
+    tft.fillRect(146, 9, 4, 8, Green_Yellow);
+    tft.fillRect(141, 9, 4, 8, Green_Yellow);
+    tft.fillRect(136, 9, 4, 8, Green_Yellow);
+  }
+  if(BVal >= 330){
+    tft.fillRect(151, 9, 4, 8, Black);
+    tft.fillRect(146, 9, 4, 8, Black);
+    tft.fillRect(141, 9, 4, 8, Yellow);
+    tft.fillRect(136, 9, 4, 8, Yellow);
+  }
+  if(BVal >= 315){
+    tft.fillRect(151, 9, 4, 8, Black);
+    tft.fillRect(146, 9, 4, 8, Black);
+    tft.fillRect(141, 9, 4, 8, Black);
+    tft.fillRect(136, 9, 4, 8, Red);
+  }
+  else{
+    tft.fillRect(151, 9, 4, 8, Black);
+    tft.fillRect(146, 9, 4, 8, Black);
+    tft.fillRect(141, 9, 4, 8, Black);
+    tft.fillRect(136, 9, 4, 8, Black);
+  }
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void setup() {
   Serial.begin(9600);
   pinMode(buttonPin, INPUT);
@@ -380,11 +420,11 @@ void setup() {
   tft.setCursor(18, 62);
   tft.print("0");
 
-  tft.drawRect(135, 8, 18, 10, White);
-  tft.fillRect(153, 11, 2, 4, White);
-  
+  tft.drawRect(135, 8, 21, 10, White);
+  tft.fillRect(156, 11, 2, 4, White);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void loop(){
   MusicalAlphabetJudge();
+  Power_display();
 }
