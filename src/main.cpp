@@ -7,6 +7,7 @@
 #include <Fonts/FreeSerif9pt7b.h>  // 字型FreeSerif9pt7b
 #include <I2S.h>
 #include <SPI.h>
+#include <math.h>
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 #define CS   4 // TFT CS PIN腳
 #define DC   6 // TFT DC(A0、RS) PIN腳
@@ -378,6 +379,10 @@ void setup() {
   tft.setTextColor(White, Black);
   tft.setCursor(18, 62);
   tft.print("0");
+
+  tft.drawRect(135, 8, 18, 10, White);
+  tft.fillRect(153, 11, 2, 4, White);
+  
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void loop(){
