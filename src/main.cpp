@@ -57,7 +57,7 @@ int PaintingWire;
 int j, j2;
 int i, i2;
 long BADC;
-int BVal;
+float BVal;
 
 typedef float ElemType;     // 原始資料序列的資料型別,可以在這裡設定
 typedef struct{             // 定義複數結構體
@@ -280,7 +280,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, CU[Octave], D[Octave], D[Octave], DU[Octave])){ //D
     intonation = AudioPitch(D[Octave], CU[Octave], DU[Octave]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+    if(Octave == 3 && intonation >= 100.0 && intonation <= 300.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -293,7 +293,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, DU[Octave], E[Octave], E[Octave], F[Octave])){  //E
     intonation = AudioPitch(E[Octave], DU[Octave], F[Octave]);
-    if(Octave == 2 && Octave == 4 && intonation >= 40.0 && intonation <= 60.0)
+    if((Octave == 2 || Octave == 4) && intonation >= 160.0 && intonation <= 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -311,7 +311,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, FU[Octave], G[Octave], G[Octave], GU[Octave])){ //G
     intonation = AudioPitch(G[Octave], FU[Octave], GU[Octave]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+    if(Octave == 3 && intonation >= 160.0 && intonation <= 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -324,7 +324,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, GU[Octave], A[Octave], A[Octave], B[Octave])){  //A
     intonation = AudioPitch(A[Octave], GU[Octave], B[Octave]);
-    if(Octave == 2 && intonation > 40.0 && intonation < 60.0)
+    if(Octave == 2 && intonation > 160.0 && intonation < 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -332,7 +332,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, A[Octave], B[Octave], B[Octave], C[Octave + 1]) && Octave <= 7){ //B
     intonation = AudioPitch(B[Octave], A[Octave], C[Octave + 1]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+    if(Octave == 3 && intonation >= 160.0 && intonation <= 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -350,32 +350,32 @@ void MusicalAlphabetJudge(){
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Power_display(){
   BADC = analogRead(battery);
-  BVal = BADC * (3.3 / 4095) * 128;
-  if(BVal >= 360){
+  BVal = 3.3 / 4096 * BADC * 2 * 1.45;
+  if(BVal >= 3.6){
     tft.fillRect(151, 9, 4, 8, Green);
     tft.fillRect(146, 9, 4, 8, Green);
     tft.fillRect(141, 9, 4, 8, Green);
     tft.fillRect(136, 9, 4, 8, Green);
   }
-  if(BVal >= 345){
+  else if(BVal >= 3.45 && BVal < 3.6){
     tft.fillRect(151, 9, 4, 8, Black);
     tft.fillRect(146, 9, 4, 8, Green_Yellow);
     tft.fillRect(141, 9, 4, 8, Green_Yellow);
     tft.fillRect(136, 9, 4, 8, Green_Yellow);
   }
-  if(BVal >= 330){
+  else if(BVal >= 3.3 && BVal < 3.45){
     tft.fillRect(151, 9, 4, 8, Black);
     tft.fillRect(146, 9, 4, 8, Black);
     tft.fillRect(141, 9, 4, 8, Yellow);
     tft.fillRect(136, 9, 4, 8, Yellow);
   }
-  if(BVal >= 315){
+  else if(BVal >= 3.15 && BVal < 3.3){
     tft.fillRect(151, 9, 4, 8, Black);
     tft.fillRect(146, 9, 4, 8, Black);
     tft.fillRect(141, 9, 4, 8, Black);
     tft.fillRect(136, 9, 4, 8, Red);
   }
-  else{
+  else if(BVal < 3.15){
     tft.fillRect(151, 9, 4, 8, Black);
     tft.fillRect(146, 9, 4, 8, Black);
     tft.fillRect(141, 9, 4, 8, Black);
@@ -386,6 +386,9 @@ void Power_display(){
 void setup() {
   Serial.begin(9600);
   pinMode(buttonPin, INPUT);
+  pinMode(battery, INPUT);
+  analogReadResolution(12);
+  analogWriteResolution(12);
   // 設備初始化
   I2S.begin(I2S_PHILIPS_MODE, fs, 32);
   Wire.begin();
@@ -427,4 +430,7 @@ void setup() {
 void loop(){
   MusicalAlphabetJudge();
   Power_display();
+  Serial.print(BADC);
+  Serial.print("\t");
+  Serial.println(BVal);
 }
