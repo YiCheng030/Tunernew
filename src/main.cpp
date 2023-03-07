@@ -280,7 +280,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, CU[Octave], D[Octave], D[Octave], DU[Octave])){ //D
     intonation = AudioPitch(D[Octave], CU[Octave], DU[Octave]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+    if(Octave == 3 && intonation >= 100.0 && intonation <= 300.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -293,7 +293,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, DU[Octave], E[Octave], E[Octave], F[Octave])){  //E
     intonation = AudioPitch(E[Octave], DU[Octave], F[Octave]);
-    if(Octave == 2 && Octave == 4 && intonation >= 40.0 && intonation <= 60.0)
+    if((Octave == 2 || Octave == 4) && intonation >= 160.0 && intonation <= 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -311,7 +311,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, FU[Octave], G[Octave], G[Octave], GU[Octave])){ //G
     intonation = AudioPitch(G[Octave], FU[Octave], GU[Octave]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+    if(Octave == 3 && intonation >= 160.0 && intonation <= 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -324,7 +324,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, GU[Octave], A[Octave], A[Octave], B[Octave])){  //A
     intonation = AudioPitch(A[Octave], GU[Octave], B[Octave]);
-    if(Octave == 2 && intonation > 40.0 && intonation < 60.0)
+    if(Octave == 2 && intonation > 160.0 && intonation < 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -332,7 +332,7 @@ void MusicalAlphabetJudge(){
   }
   else if(InRange(freq, A[Octave], B[Octave], B[Octave], C[Octave + 1]) && Octave <= 7){ //B
     intonation = AudioPitch(B[Octave], A[Octave], C[Octave + 1]);
-    if(Octave == 3 && intonation >= 40.0 && intonation <= 60.0)
+    if(Octave == 3 && intonation >= 160.0 && intonation <= 240.0)
       tft.setTextColor(Green, White);
     else
       tft.setTextColor(Black, White);
@@ -350,8 +350,8 @@ void MusicalAlphabetJudge(){
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Power_display(){
   BADC = analogRead(battery);
-  BVal = 3.3/4096*BADC*2*1.45;
-  if(BVal >= 3.6){
+  BVal = BADC * (3.3 / 4095) * 128;
+  if(BVal >= 360){
     tft.fillRect(151, 9, 4, 8, Green);
     tft.fillRect(146, 9, 4, 8, Green);
     tft.fillRect(141, 9, 4, 8, Green);
