@@ -386,6 +386,31 @@ void Power_display(){
   }
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
+//Function that is used to check if TC5 is done syncing
+//returns true when it is done syncing
+bool tcIsSyncing(){
+  return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+//This function enables TC5 and waits for it to be ready
+void tcStartCounter(){
+  TC5->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE; //set the CTRLA register
+  while (tcIsSyncing()); //wait until snyc'd
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+//Reset TC5 
+void tcReset(){
+  TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
+  while (tcIsSyncing());
+  while (TC5->COUNT16.CTRLA.bit.SWRST);
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+//disable TC5
+void tcDisable(){
+  TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
+  while (tcIsSyncing());
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 //this function gets called by the interrupt at <sampleRate>Hertz
 void TC5_Handler (void){
   //YOUR CODE HERE 
@@ -435,31 +460,6 @@ void TC5_Handler (void){
  TC5->COUNT16.INTENSET.bit.MC0 = 1;
  while (tcIsSyncing()); //wait until TC5 is done syncing 
 } 
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//Function that is used to check if TC5 is done syncing
-//returns true when it is done syncing
-bool tcIsSyncing(){
-  return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
-}
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//This function enables TC5 and waits for it to be ready
-void tcStartCounter(){
-  TC5->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE; //set the CTRLA register
-  while (tcIsSyncing()); //wait until snyc'd
-}
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//Reset TC5 
-void tcReset(){
-  TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
-  while (tcIsSyncing());
-  while (TC5->COUNT16.CTRLA.bit.SWRST);
-}
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//disable TC5
-void tcDisable(){
-  TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
-  while (tcIsSyncing());
-}
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void setup() {
   Serial.begin(9600);
