@@ -57,7 +57,7 @@ float freq = 0;
 int PaintingWire;
 int j, j2;
 int i, i2;
-long BADC;
+long BADC[100];
 float BVal;
 
 typedef float ElemType;     // 原始資料序列的資料型別,可以在這裡設定
@@ -350,8 +350,10 @@ void MusicalAlphabetJudge(){
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Power_display(){
-  BADC = analogRead(battery);
-  BVal = BADC * (3.3 / 4095) * 128;
+  for(int count = 0; count < 100; count++){
+    BADC[count] = analogRead(battery);
+  }
+  // BVal = BADC * (3.3 / 4095) * 128;
   if(BVal >= 360){
     tft.fillRect(151, 9, 4, 8, Green);
     tft.fillRect(146, 9, 4, 8, Green);
@@ -508,7 +510,7 @@ void setup() {
 void loop(){
   MusicalAlphabetJudge();
   Power_display();
-  Serial.print(BADC);
-  Serial.print("\t");
-  Serial.println(BVal);
+  // Serial.print(BADC);
+  // Serial.print("\t");
+  // Serial.println(BVal);
 }
