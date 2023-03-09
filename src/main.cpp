@@ -465,6 +465,8 @@ void setup() {
   pinMode(battery, INPUT);
   analogReadResolution(12);
   analogWriteResolution(12);
+  tcConfigure(sampleRate); //configure the timer to run at <sampleRate>Hertz
+  tcStartCounter(); //starts the timer
   // 設備初始化
   I2S.begin(I2S_PHILIPS_MODE, fs, 32);
   Wire.begin();
