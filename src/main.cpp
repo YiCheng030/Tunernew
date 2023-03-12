@@ -350,6 +350,15 @@ void MusicalAlphabetJudge(){
   tft.print(Octave);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
+// 平均濾波器
+int averageFilter(int *arr, int n){
+  int total = 0, temp;
+  for(int i = 0; i < n; i++)
+    total += arr[i];
+  temp = total / n;
+  return temp;
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
 // 中值濾波器
 int medianFilter(int *arr, int n){
   int temp;
@@ -372,7 +381,9 @@ void Power_display(int batteryRead){
   index_last++;
   if(index_last >= sampleSize){
     int BADC = medianFilter(readings, sampleSize);
-    BVal = BADC * (3.3 / 4095) * 2.8;
+    // int BADC = averageFilter(readings, sampleSize);
+    BVal = BADC * (3.3 / 4095) * 3;
+    Serial.println(BVal);
     if(BVal >= 3.9){
       tft.fillRect(151, 9, 4, 8, Green);
       tft.fillRect(146, 9, 4, 8, Green);
