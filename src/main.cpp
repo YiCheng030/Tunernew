@@ -25,7 +25,6 @@
 #define Yellow tft.color565(255, 255, 0)    //黃
 #define Green_Yellow tft.color565(173, 255, 47) //綠黃
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-uint32_t sampleRate = 1000;
 #define samples 1024
 #define fs 4000
 #define TotalWire 400
@@ -48,7 +47,7 @@ const int buttonPin = 5;
 int N_FFT = 0;                // 傅立葉變換的點數  
 int M_of_N_FFT = 0;           // 蝶形運算的級數，N = 2^M  
 int signalFrequency[samples];
-int x;
+int x,y;
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float binmax, peakmax;
 float Proportion, intonation = 0, intonation_old;
@@ -57,8 +56,13 @@ float freq = 0;
 int PaintingWire;
 int j, j2;
 int i, i2;
-long BADC[100];
 float BVal;
+uint16_t batteryflag = 0;
+int g;
+
+const int sampleSize = 50; // 要處理的樣本數量
+int readings[sampleSize]; // 用於存儲讀取的樣本數據的陣列
+int index_last = 0; // 存儲最後一次讀取的索引
 
 typedef float ElemType;     // 原始資料序列的資料型別,可以在這裡設定
 typedef struct{             // 定義複數結構體
@@ -349,117 +353,113 @@ void MusicalAlphabetJudge(){
   tft.print(Octave);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-void Power_display(){
-  for(int count = 0; count < 100; count++){
-    BADC[count] = analogRead(battery);
+// 中值濾波器
+int medianFilter(int *arr, int n){
+  int temp;
+  // 用選擇排序排序陣列
+  for (int i = 0; i < n - 1; i++) {
+    for (int j = i + 1; j < n; j++) {
+      if (arr[i] > arr[j]) {
+        temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+    }
   }
-  // BVal = BADC * (3.3 / 4095) * 128;
-  if(BVal >= 360){
-    tft.fillRect(151, 9, 4, 8, Green);
-    tft.fillRect(146, 9, 4, 8, Green);
-    tft.fillRect(141, 9, 4, 8, Green);
-    tft.fillRect(136, 9, 4, 8, Green);
-  }
-  else if(BVal >= 3.45 && BVal < 3.6){
-    tft.fillRect(151, 9, 4, 8, Black);
-    tft.fillRect(146, 9, 4, 8, Green_Yellow);
-    tft.fillRect(141, 9, 4, 8, Green_Yellow);
-    tft.fillRect(136, 9, 4, 8, Green_Yellow);
-  }
-  else if(BVal >= 3.3 && BVal < 3.45){
-    tft.fillRect(151, 9, 4, 8, Black);
-    tft.fillRect(146, 9, 4, 8, Black);
-    tft.fillRect(141, 9, 4, 8, Yellow);
-    tft.fillRect(136, 9, 4, 8, Yellow);
-  }
-  else if(BVal >= 3.15 && BVal < 3.3){
-    tft.fillRect(151, 9, 4, 8, Black);
-    tft.fillRect(146, 9, 4, 8, Black);
-    tft.fillRect(141, 9, 4, 8, Black);
-    tft.fillRect(136, 9, 4, 8, Red);
-  }
-  else if(BVal < 3.15){
-    tft.fillRect(151, 9, 4, 8, Black);
-    tft.fillRect(146, 9, 4, 8, Black);
-    tft.fillRect(141, 9, 4, 8, Black);
-    tft.fillRect(136, 9, 4, 8, Black);
+  // 返回排序後中間數值
+  return arr[n/2];
+}
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+void Power_display(int batteryRead){
+  readings[index_last] = batteryRead;
+  index_last++;
+  if(index_last >= 10){
+    int BADC = medianFilter(readings, sampleSize);
+    BVal = (BADC / 10) * (3.3 / 4095) * 25;
+    // Serial.print(",");
+    Serial.println(BVal);
+    if(BVal >= 3.6){
+      tft.fillRect(151, 9, 4, 8, Green);
+      tft.fillRect(146, 9, 4, 8, Green);
+      tft.fillRect(141, 9, 4, 8, Green);
+      tft.fillRect(136, 9, 4, 8, Green);
+    }
+    else if(BVal >= 3.45 && BVal < 3.6){
+      tft.fillRect(151, 9, 4, 8, Black);
+      tft.fillRect(146, 9, 4, 8, Green_Yellow);
+      tft.fillRect(141, 9, 4, 8, Green_Yellow);
+      tft.fillRect(136, 9, 4, 8, Green_Yellow);
+    }
+    else if(BVal >= 3.3 && BVal < 3.45){
+      tft.fillRect(151, 9, 4, 8, Black);
+      tft.fillRect(146, 9, 4, 8, Black);
+      tft.fillRect(141, 9, 4, 8, Yellow);
+      tft.fillRect(136, 9, 4, 8, Yellow);
+    }
+    else if(BVal >= 3.15 && BVal < 3.3){
+      tft.fillRect(151, 9, 4, 8, Black);
+      tft.fillRect(146, 9, 4, 8, Black);
+      tft.fillRect(141, 9, 4, 8, Black);
+      tft.fillRect(136, 9, 4, 8, Red);
+    }
+    else if(BVal < 3.15){
+      tft.fillRect(151, 9, 4, 8, Black);
+      tft.fillRect(146, 9, 4, 8, Black);
+      tft.fillRect(141, 9, 4, 8, Black);
+      tft.fillRect(136, 9, 4, 8, Black);
+    }
+    index_last = 0;
   }
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//Function that is used to check if TC5 is done syncing
-//returns true when it is done syncing
 bool tcIsSyncing(){
   return TC5->COUNT16.STATUS.reg & TC_STATUS_SYNCBUSY;
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//This function enables TC5 and waits for it to be ready
 void tcStartCounter(){
-  TC5->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE; //set the CTRLA register
-  while (tcIsSyncing()); //wait until snyc'd
+  TC5->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;
+  while (tcIsSyncing());
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//Reset TC5 
 void tcReset(){
   TC5->COUNT16.CTRLA.reg = TC_CTRLA_SWRST;
   while (tcIsSyncing());
   while (TC5->COUNT16.CTRLA.bit.SWRST);
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//disable TC5
 void tcDisable(){
   TC5->COUNT16.CTRLA.reg &= ~TC_CTRLA_ENABLE;
   while (tcIsSyncing());
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
-//this function gets called by the interrupt at <sampleRate>Hertz
-void TC5_Handler (void){
-  //YOUR CODE HERE 
-  
-  // END OF YOUR CODE
-  TC5->COUNT16.INTFLAG.bit.MC0 = 1; //Writing a 1 to INTFLAG.bit.MC0 clears the interrupt so that it will run again
-}
-/*-------------------------------------------------------------------------------------------------------------------------------------------*/
-/* 
- *  TIMER SPECIFIC FUNCTIONS FOLLOW
- *  you shouldn't change these unless you know what you're doing
- */
-
-//Configures the TC to generate output events at the sample frequency.
-//Configures the TC in Frequency Generation mode, with an event output once
-//each time the audio sample frequency period expires.
- void tcConfigure(int sampleRate)
-{
- // select the generic clock generator used as source to the generic clock multiplexer
+void tcConfigure(){
  GCLK->CLKCTRL.reg = (uint16_t) (GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_ID(GCM_TC4_TC5)) ;
  while (GCLK->STATUS.bit.SYNCBUSY);
 
- tcReset(); //reset TC5
+ tcReset(); 
 
- // Set Timer counter 5 Mode to 16 bits, it will become a 16bit counter ('mode1' in the datasheet)
  TC5->COUNT16.CTRLA.reg |= TC_CTRLA_MODE_COUNT16;
- // Set TC5 waveform generation mode to 'match frequency'
  TC5->COUNT16.CTRLA.reg |= TC_CTRLA_WAVEGEN_MFRQ;
- //set prescaler
- //the clock normally counts at the GCLK_TC frequency, but we can set it to divide that frequency to slow it down
- //you can use different prescaler divisons here like TC_CTRLA_PRESCALER_DIV1 to get a different range
- TC5->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1024 | TC_CTRLA_ENABLE; //it will divide GCLK_TC frequency by 1024
- //set the compare-capture register. 
- //The counter will count up to this value (it's a 16bit counter so we use uint16_t)
- //this is how we fine-tune the frequency, make it count to a lower or higher value
- //system clock should be 1MHz (8MHz/8) at Reset by default
- TC5->COUNT16.CC[0].reg = (uint16_t) (SystemCoreClock / sampleRate);
+ TC5->COUNT16.CTRLA.reg |= TC_CTRLA_PRESCALER_DIV1024 | TC_CTRLA_ENABLE; 
+ TC5->COUNT16.CC[0].reg = (uint16_t) (SystemCoreClock / 1024 / 10 - 1);
  while (tcIsSyncing());
- 
- // Configure interrupt request
+
  NVIC_DisableIRQ(TC5_IRQn);
  NVIC_ClearPendingIRQ(TC5_IRQn);
  NVIC_SetPriority(TC5_IRQn, 0);
  NVIC_EnableIRQ(TC5_IRQn);
 
- // Enable the TC5 interrupt request
  TC5->COUNT16.INTENSET.bit.MC0 = 1;
  while (tcIsSyncing()); //wait until TC5 is done syncing 
 } 
+/*-------------------------------------------------------------------------------------------------------------------------------------------*/
+void TC5_Handler(void){
+  //YOUR CODE HERE 
+  Power_display(analogRead(battery));
+  // Serial.println(batteryflag);
+  // END OF YOUR CODE
+  TC5->COUNT16.INTFLAG.bit.MC0 = 1;
+}
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void setup() {
   Serial.begin(9600);
@@ -467,9 +467,13 @@ void setup() {
   pinMode(battery, INPUT);
   analogReadResolution(12);
   analogWriteResolution(12);
-  tcConfigure(sampleRate); //configure the timer to run at <sampleRate>Hertz
+  tcConfigure(); //configure the timer to run at <sampleRate>Hertz
   tcStartCounter(); //starts the timer
-  // 設備初始化
+  
+  for (int i = 0; i < sampleSize; i++){
+    readings[i] = 0;
+  }
+
   I2S.begin(I2S_PHILIPS_MODE, fs, 32);
   Wire.begin();
   tft.initR(INITR_BLACKTAB);  // Init ST7735S chip, black tab
@@ -509,8 +513,4 @@ void setup() {
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void loop(){
   MusicalAlphabetJudge();
-  Power_display();
-  // Serial.print(BADC);
-  // Serial.print("\t");
-  // Serial.println(BVal);
 }
