@@ -47,7 +47,6 @@ const int buttonPin = 5;
 int N_FFT = 0;                // 傅立葉變換的點數  
 int M_of_N_FFT = 0;           // 蝶形運算的級數，N = 2^M  
 int signalFrequency[samples];
-int x,y;
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 float binmax, peakmax;
 float Proportion, intonation = 0, intonation_old;
@@ -57,10 +56,8 @@ int PaintingWire;
 int j, j2;
 int i, i2;
 float BVal;
-uint16_t batteryflag = 0;
-int g;
 
-const int sampleSize = 50; // 要處理的樣本數量
+const int sampleSize = 30; // 要處理的樣本數量
 int readings[sampleSize]; // 用於存儲讀取的樣本數據的陣列
 int index_last = 0; // 存儲最後一次讀取的索引
 
@@ -166,7 +163,7 @@ void Close_FFT(void){
 }
 /*-------------------------------------------------------------------------------------------------------------------------------------------*/
 void Find_peaks(){
-  int count1, count2 = 1, count3;
+  int count1, count2 = 1, count3, x = 0;
   int peak[count2];
   peakmax = 0;
   binmax = 0;
@@ -373,36 +370,34 @@ int medianFilter(int *arr, int n){
 void Power_display(int batteryRead){
   readings[index_last] = batteryRead;
   index_last++;
-  if(index_last >= 10){
+  if(index_last >= sampleSize){
     int BADC = medianFilter(readings, sampleSize);
-    BVal = (BADC / 10) * (3.3 / 4095) * 25;
-    // Serial.print(",");
-    Serial.println(BVal);
-    if(BVal >= 3.6){
+    BVal = BADC * (3.3 / 4095) * 2.8;
+    if(BVal >= 3.9){
       tft.fillRect(151, 9, 4, 8, Green);
       tft.fillRect(146, 9, 4, 8, Green);
       tft.fillRect(141, 9, 4, 8, Green);
       tft.fillRect(136, 9, 4, 8, Green);
     }
-    else if(BVal >= 3.45 && BVal < 3.6){
+    else if(BVal >= 3.6 && BVal < 3.9){
       tft.fillRect(151, 9, 4, 8, Black);
       tft.fillRect(146, 9, 4, 8, Green_Yellow);
       tft.fillRect(141, 9, 4, 8, Green_Yellow);
       tft.fillRect(136, 9, 4, 8, Green_Yellow);
     }
-    else if(BVal >= 3.3 && BVal < 3.45){
+    else if(BVal >= 3.3 && BVal < 3.6){
       tft.fillRect(151, 9, 4, 8, Black);
       tft.fillRect(146, 9, 4, 8, Black);
       tft.fillRect(141, 9, 4, 8, Yellow);
       tft.fillRect(136, 9, 4, 8, Yellow);
     }
-    else if(BVal >= 3.15 && BVal < 3.3){
+    else if(BVal >= 3.0 && BVal < 3.3){
       tft.fillRect(151, 9, 4, 8, Black);
       tft.fillRect(146, 9, 4, 8, Black);
       tft.fillRect(141, 9, 4, 8, Black);
       tft.fillRect(136, 9, 4, 8, Red);
     }
-    else if(BVal < 3.15){
+    else if(BVal < 3.0){
       tft.fillRect(151, 9, 4, 8, Black);
       tft.fillRect(146, 9, 4, 8, Black);
       tft.fillRect(141, 9, 4, 8, Black);
